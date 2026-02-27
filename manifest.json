@@ -1,0 +1,17 @@
+{
+  "name": "Devo Mobile Cloud",
+  "short_name": "Devo Mobile",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#020203",
+  "theme_color": "#3b82f6",
+  "description": "Manajemen Kas Devo Mobile dengan Sinkronisasi Cloud",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
