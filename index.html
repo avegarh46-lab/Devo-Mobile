@@ -141,7 +141,11 @@
          */
         const CSV_ENDPOINT = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRwU2XkzKN_-sKgN1LpW_rEHczChw5ehpuxvK-DDA41PS416LVIQUieiVgXsSGvooxvaQvoMiTclAnu/pub?gid=299331266&single=true&output=csv";
         const FORM_ENDPOINT = "https://docs.google.com/forms/d/e/1FAIpQLSefFctKQUaiDNYVgceQHy_Vzt9K83Mq5UeD5FyplaWu1PU2-A/viewform?usp=publish-editor;
-
+        const SHEET_KAS_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRwU2XkzKN_-sKgN1LpW_rEHczChw5ehpuxvK-DDA41PS416LVIQUieiVgXsSGvooxvaQvoMiTclAnu/pub?gid=1165441684&single=true&output=csv";
+        const SHEET_ANGGOTA_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRwU2XkzKN_-sKgN1LpW_rEHczChw5ehpuxvK-DDA41PS416LVIQUieiVgXsSGvooxvaQvoMiTclAnu/pub?gid=1651168163&single=true&output=csv";
+        const SHEET_PROJECT_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRwU2XkzKN_-sKgN1LpW_rEHczChw5ehpuxvK-DDA41PS416LVIQUieiVgXsSGvooxvaQvoMiTclAnu/pubhtml?gid=2118718983&single=true";
+        const FORM_KAS_URL = "https://docs.google.com/forms/d/e/1FAIpQLSefFctKQUaiDNYVgceQHy_Vzt9K83Mq5UeD5FyplaWu1PU2-A/viewform?usp=publish-editor";
+        
         async function refreshCloudData() {
             const btn = document.getElementById('refresh-btn');
             const container = document.getElementById('log-container');
@@ -252,4 +256,5 @@
         setInterval(refreshCloudData, 60000);
     </script>
 </body>
+
 </html>
