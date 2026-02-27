@@ -1,19 +1,17 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Devo Mobile - Cloud Sync</title>
+    <title>Devo Mobile Pro</title>
     
-    <!-- PWA Meta Tags -->
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="icon.png">
 
-    <!-- Styles & Fonts -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
         
@@ -26,235 +24,124 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--bg-dark);
             color: #ffffff;
-            -webkit-tap-highlight-color: transparent;
+            overflow: hidden;
         }
 
         .luxury-card {
             background: rgba(25, 25, 30, 0.6);
             backdrop-filter: blur(25px);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.7);
         }
 
-        .btn-main {
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
-        }
-
-        .shimmer {
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);
-            background-size: 200% 100%;
-            animation: shimmer 2s infinite linear;
-        }
-
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
-
-        .scroll-hide::-webkit-scrollbar {
+        .page-container {
+            height: 100vh;
+            overflow-y: auto;
+            padding-bottom: 140px;
             display: none;
         }
 
-        /* Status Animation */
-        .pulse-status {
-            animation: pulse 2s infinite;
+        .active-page { display: block !important; }
+
+        #input-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(10px);
+            align-items: flex-end;
         }
 
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.4; }
-            100% { opacity: 1; }
-        }
+        #input-modal.show { display: flex; }
     </style>
 </head>
-<body class="pb-32 scroll-hide">
+<body>
 
-    <!-- Navbar -->
-    <nav class="sticky top-0 z-50 p-6 bg-[#020203]/80 backdrop-blur-xl border-b border-white/5 flex justify-between items-center">
+    <!-- Header -->
+    <nav class="fixed top-0 left-0 right-0 z-50 p-6 bg-[#020203]/80 backdrop-blur-xl border-b border-white/5 flex justify-between items-center">
         <div>
-            <h1 class="text-xl font-extrabold italic tracking-tighter uppercase leading-none">DEVO<span class="text-blue-500">MOBILE</span></h1>
-            <div class="flex items-center gap-1.5 mt-1">
-                <div id="sync-dot" class="w-1.5 h-1.5 bg-green-500 rounded-full pulse-status"></div>
-                <p id="sync-text" class="text-[7px] font-bold text-slate-500 tracking-[0.2em] uppercase">Cloud Synchronized</p>
-            </div>
+            <h1 class="text-xl font-extrabold italic uppercase">DEVO<span class="text-blue-500">PRO</span></h1>
         </div>
-        <button onclick="refreshCloudData()" id="refresh-btn" class="w-10 h-10 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 active:scale-90 transition-all">
+        <button onclick="refreshCurrentPage()" id="refresh-btn" class="w-10 h-10 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10">
             <i class="fas fa-sync-alt text-[10px] text-blue-400"></i>
         </button>
     </nav>
 
-    <main class="p-6 max-w-md mx-auto space-y-8">
-        <!-- Dashboard Saldo -->
-        <section class="luxury-card p-8 rounded-[2.5rem] relative overflow-hidden">
-            <div class="relative z-10">
-                <div class="flex justify-between mb-2">
-                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest italic opacity-70">Ringkasan Kas Global</p>
-                    <i class="fas fa-chart-line text-blue-500/20 text-xl"></i>
-                </div>
-                <h2 id="balance-amount" class="text-4xl font-extrabold tracking-tighter italic">Rp 0</h2>
-                
-                <div class="flex gap-6 mt-8 pt-6 border-t border-white/5">
-                    <div class="flex-1">
-                        <p class="text-[8px] font-black text-slate-500 uppercase mb-1 tracking-widest">Inflow</p>
-                        <p id="total-inflow" class="text-xs font-bold text-green-500">+Rp 0</p>
-                    </div>
-                    <div class="flex-1 text-right">
-                        <p class="text-[8px] font-black text-slate-500 uppercase mb-1 tracking-widest">Outflow</p>
-                        <p id="total-outflow" class="text-xs font-bold text-red-500">-Rp 0</p>
-                    </div>
-                </div>
-            </div>
-            <!-- Glow Effect -->
-            <div class="absolute -right-12 -bottom-12 w-48 h-48 bg-blue-600/10 rounded-full blur-[60px]"></div>
+    <!-- Halaman Kas -->
+    <main id="page-kas" class="page-container active-page pt-24 px-6 max-w-md mx-auto space-y-6">
+        <section class="luxury-card p-8 rounded-[2.5rem]">
+            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">Total Saldo</p>
+            <h2 id="kas-saldo" class="text-4xl font-extrabold italic">Rp 0</h2>
         </section>
-
-        <!-- Transaksi Terkini -->
-        <section class="space-y-4">
-            <div class="flex justify-between items-center px-2">
-                <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] italic">Aktivitas Terbaru</h3>
-                <span id="entry-badge" class="text-[8px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-1 rounded-lg uppercase">0 Log</span>
-            </div>
-
-            <div id="log-container" class="space-y-3">
-                <!-- Loading Placeholder -->
-                <div class="luxury-card p-6 rounded-[2rem] shimmer h-24"></div>
-                <div class="luxury-card p-6 rounded-[2rem] shimmer h-24 opacity-60"></div>
-                <div class="luxury-card p-6 rounded-[2rem] shimmer h-24 opacity-30"></div>
-            </div>
-        </section>
+        <div id="kas-list" class="space-y-3"></div>
     </main>
 
-    <!-- Menu Bawah -->
-    <div class="fixed bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black via-black/90 to-transparent pointer-events-none z-50">
-        <div class="max-w-md mx-auto pointer-events-auto">
-            <button onclick="openExternalInput()" class="w-full btn-main py-5 rounded-[2rem] text-[11px] font-extrabold uppercase tracking-[0.2em] flex items-center justify-center gap-3 active:scale-95 transition-all">
-                <i class="fas fa-plus-circle text-base"></i> Entri Transaksi Baru
+    <!-- Modal Input (Ganti window.open) -->
+    <div id="input-modal">
+        <div class="w-full bg-[#121214] rounded-t-[3rem] p-8 border-t border-white/10 animate-slide-up">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-black italic uppercase text-blue-500">Tambah Data Kas</h3>
+                <button onclick="toggleModal()" class="text-slate-500 text-xl">&times;</button>
+            </div>
+            
+            <!-- Link ke Google Form via Iframe agar tidak buka browser baru -->
+            <div class="rounded-2xl overflow-hidden border border-white/5 h-[450px]">
+                <iframe id="form-iframe" src="GANTI_LINK_GOOGLE_FORM_ANDA?embedded=true" width="100%" height="100%" frameborder="0" marginheight="0" marginwidth="0">Memuat...</iframe>
+            </div>
+            
+            <button onclick="toggleModal()" class="w-full mt-4 py-4 text-[10px] font-black uppercase text-slate-500">Selesai & Tutup</button>
+        </div>
+    </div>
+
+    <!-- Navigasi -->
+    <div class="fixed bottom-0 left-0 right-0 p-4 pb-8 bg-[#020203]/90 backdrop-blur-xl border-t border-white/5 z-50">
+        <div class="max-w-md mx-auto flex items-center justify-around">
+            <button onclick="switchTab('anggota')" class="flex flex-col items-center opacity-50"><i class="fas fa-users"></i><span class="text-[7px] mt-1 uppercase">Anggota</span></button>
+            
+            <!-- TOMBOL SEKARANG BUKA MODAL, BUKAN BROWSER -->
+            <button onclick="toggleModal()" class="relative -top-8 w-16 h-16 rounded-[2rem] bg-blue-600 flex items-center justify-center shadow-2xl border-4 border-[#020203]">
+                <i class="fas fa-plus text-white text-lg"></i>
             </button>
+            
+            <button onclick="switchTab('project')" class="flex flex-col items-center opacity-50"><i class="fas fa-rocket"></i><span class="text-[7px] mt-1 uppercase">Project</span></button>
         </div>
     </div>
 
     <script>
-        /**
-         * KONFIGURASI
-         * Ganti link di bawah ini dengan link Publish CSV dan Link Google Form Anda
-         */
-        const CSV_ENDPOINT = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRwU2XkzKN_-sKgN1LpW_rEHczChw5ehpuxvK-DDA41PS416LVIQUieiVgXsSGvooxvaQvoMiTclAnu/pub?gid=299331266&single=true&output=csv";
-        const FORM_ENDPOINT = "https://docs.google.com/forms/d/e/1FAIpQLSefFctKQUaiDNYVgceQHy_Vzt9K83Mq5UeD5FyplaWu1PU2-A/viewform?usp=publish-editor;
-        const SHEET_KAS_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRwU2XkzKN_-sKgN1LpW_rEHczChw5ehpuxvK-DDA41PS416LVIQUieiVgXsSGvooxvaQvoMiTclAnu/pub?gid=1165441684&single=true&output=csv";
-        const SHEET_ANGGOTA_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRwU2XkzKN_-sKgN1LpW_rEHczChw5ehpuxvK-DDA41PS416LVIQUieiVgXsSGvooxvaQvoMiTclAnu/pub?gid=1651168163&single=true&output=csv";
-        const SHEET_PROJECT_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRwU2XkzKN_-sKgN1LpW_rEHczChw5ehpuxvK-DDA41PS416LVIQUieiVgXsSGvooxvaQvoMiTclAnu/pubhtml?gid=2118718983&single=true";
-        const FORM_KAS_URL = "https://docs.google.com/forms/d/e/1FAIpQLSefFctKQUaiDNYVgceQHy_Vzt9K83Mq5UeD5FyplaWu1PU2-A/viewform?usp=publish-editor";
+        const SHEET_KAS_CSV = "LINK_CSV_KAS";
         
-        async function refreshCloudData() {
-            const btn = document.getElementById('refresh-btn');
-            const container = document.getElementById('log-container');
-            const syncDot = document.getElementById('sync-dot');
-            const syncText = document.getElementById('sync-text');
-            
-            btn.classList.add('animate-spin');
-            syncDot.classList.replace('bg-green-500', 'bg-yellow-500');
-            syncText.innerText = "Syncing...";
+        function toggleModal() {
+            const modal = document.getElementById('input-modal');
+            modal.classList.toggle('show');
+            if(!modal.classList.contains('show')) refreshCurrentPage();
+        }
 
+        async function loadKasData() {
+            const container = document.getElementById('kas-list');
             try {
-                // Fetch data dari Google Sheets CSV dengan cache burst
-                const response = await fetch(`${CSV_ENDPOINT}&cacheburst=${Date.now()}`);
-                if (!response.ok) throw new Error('Koneksi gagal');
-                
-                const rawCsv = await response.text();
-                const rows = rawCsv.split('\n').filter(r => r.trim() !== "");
-                const data = rows.slice(1); // Hapus header
-                
-                let balance = 0;
-                let inflow = 0;
-                let outflow = 0;
-                let cards = "";
+                const res = await fetch(`${SHEET_KAS_CSV}&cb=${Date.now()}`);
+                const csv = await res.text();
+                const rows = csv.split('\n').slice(1).filter(r => r.trim() !== "");
+                let saldo = 0, html = "";
 
-                if (data.length === 0) {
-                    container.innerHTML = `
-                        <div class="py-24 text-center opacity-20">
-                            <i class="fas fa-database text-2xl mb-3"></i>
-                            <p class="text-[9px] font-bold uppercase tracking-widest text-slate-500">Database Kosong</p>
-                        </div>`;
-                } else {
-                    const sorted = [...data].reverse();
-                    
-                    sorted.forEach(row => {
-                        // Regex untuk handle koma di dalam teks CSV
-                        const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-                        if (!cols || cols.length < 4) return;
-
-                        const date = cols[0].replace(/"/g, '').split(' ')[0];
-                        const type = cols[1].replace(/"/g, '').toLowerCase().trim();
-                        const note = cols[2].replace(/"/g, '');
-                        const amount = parseInt(cols[3].replace(/[^0-9]/g, '')) || 0;
-
-                        if (type === 'masuk') {
-                            balance += amount;
-                            inflow += amount;
-                        } else {
-                            balance -= amount;
-                            outflow += amount;
-                        }
-
-                        cards += `
-                            <div class="luxury-card p-6 rounded-[2.2rem] flex justify-between items-center active:scale-[0.98] transition-all duration-300">
-                                <div class="flex items-center gap-5">
-                                    <div class="w-12 h-12 rounded-2xl flex items-center justify-center border border-white/5 ${type === 'masuk' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}">
-                                        <i class="fas fa-chevron-${type === 'masuk' ? 'down' : 'up'} text-[10px]"></i>
-                                    </div>
-                                    <div>
-                                        <h4 class="text-[11px] font-extrabold uppercase text-slate-100 tracking-tight leading-none mb-1.5">${note}</h4>
-                                        <p class="text-[8px] font-bold text-slate-600 uppercase tracking-widest">${date}</p>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-[13px] font-black italic tracking-tighter ${type === 'masuk' ? 'text-green-500' : 'text-red-500'}">
-                                        ${type === 'masuk' ? '+' : '-'} ${amount.toLocaleString('id-ID')}
-                                    </p>
-                                </div>
-                            </div>`;
-                    });
-
-                    container.innerHTML = cards;
-                }
-
-                document.getElementById('balance-amount').innerText = "Rp " + balance.toLocaleString('id-ID');
-                document.getElementById('total-inflow').innerText = "+Rp " + inflow.toLocaleString('id-ID');
-                document.getElementById('total-outflow').innerText = "-Rp " + outflow.toLocaleString('id-ID');
-                document.getElementById('entry-badge').innerText = data.length + " Log";
-                
-                syncDot.classList.replace('bg-yellow-500', 'bg-green-500');
-                syncText.innerText = "Cloud Synchronized";
-
-            } catch (err) {
-                console.error(err);
-                syncDot.classList.replace('bg-green-500', 'bg-red-500');
-                syncText.innerText = "Koneksi Bermasalah";
-                container.innerHTML = `
-                    <div class="p-10 luxury-card rounded-[2rem] border-red-500/20 text-center">
-                        <i class="fas fa-wifi text-red-500/30 text-xl mb-4"></i>
-                        <p class="text-[8px] font-bold text-red-400 uppercase tracking-widest">Sinkronisasi Gagal. Cek Link CSV Anda.</p>
-                    </div>`;
-            } finally {
-                setTimeout(() => btn.classList.remove('animate-spin'), 600);
-            }
+                rows.reverse().forEach(row => {
+                    const cols = row.split(',');
+                    if (cols.length < 4) return;
+                    const tipe = cols[1].toLowerCase().trim();
+                    const val = parseInt(cols[3]) || 0;
+                    if(tipe === 'masuk') saldo += val; else saldo -= val;
+                    html += `<div class="luxury-card p-5 rounded-3xl flex justify-between">
+                                <span class="text-[10px] font-bold uppercase">${cols[2]}</span>
+                                <span class="${tipe==='masuk'?'text-green-500':'text-red-500'} font-black italic">Rp ${val.toLocaleString()}</span>
+                             </div>`;
+                });
+                document.getElementById('kas-saldo').innerText = "Rp " + saldo.toLocaleString('id-ID');
+                container.innerHTML = html;
+            } catch (e) { container.innerHTML = "Gagal memuat data."; }
         }
 
-        function openExternalInput() {
-            if (FORM_ENDPOINT === "PASTE_LINK_FORM_DISINI") {
-                alert("Harap atur link Google Form Anda terlebih dahulu di kode.");
-                return;
-            }
-            window.open(FORM_ENDPOINT, '_blank');
-        }
-
-        // Jalankan saat aplikasi dibuka
-        window.onload = refreshCloudData;
-
-        // Auto-refresh setiap 60 detik
-        setInterval(refreshCloudData, 60000);
+        function refreshCurrentPage() { loadKasData(); }
+        window.onload = () => loadKasData();
     </script>
 </body>
-
 </html>
